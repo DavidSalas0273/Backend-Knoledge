@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+.env
+.env.local
+.idea
+target
+*.iml
+*.class
+*.jar
+*.war
+.DS_Store
+node_modules

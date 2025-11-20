@@ -882,28 +882,33 @@
                     body: JSON.stringify(formData)
                 });
 
+                if (!response.ok) {
+                    let message = `Error HTTP ${response.status}`;
+                    try {
+                        const errorJson = await response.json();
+                        if (errorJson && errorJson.message) {
+                            message = errorJson.message;
+                        }
+                    } catch (parseError) {
+                        const errorText = await response.text();
+                        if (errorText) {
+                            message = errorText;
+                        }
+                    }
+                    throw new Error(message);
+                }
+
                 const data = await response.json();
 
-                if (response.ok) {
-                    // Store token and user data
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('userRole', data.user.role);
-                    localStorage.setItem('userName', data.user.name);
-
-                    // Success message
-                    alert('✅ ¡Cuenta creada exitosamente! Redirigiendo...');
-
-                    // Redirect based on role
-                    setTimeout(() => {
-                        if (data.user.role === 'teacher') {
-                            window.location.href = '/dashboard/teacher';
-                        } else {
-                            window.location.href = '/dashboard/student';
-                        }
-                    }, 1000);
-                } else {
-                    throw new Error(data.message || 'Error al registrar');
+                if (!data.user) {
+                    throw new Error('La respuesta del servidor está vacía o incompleta.');
                 }
+
+                alert('✅ ¡Cuenta creada exitosamente! Redirigiendo...');
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 800);
             } catch (error) {
                 console.error('Error:', error);
                 alert('❌ ' + error.message);

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Knowledge</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='50'%3E🎓%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -718,6 +719,8 @@
     </main>
 
     <script>
+        const API_BASE_URL = window.__API_BASE_URL__ || 'http://localhost:8081';
+
         // Alert functions
         function showAlert(type, message) {
             const alertError = document.getElementById('alertError');
@@ -752,49 +755,52 @@
             submitBtn.classList.add('loading');
             submitBtn.textContent = 'Iniciando sesión...';
 
-            const formData = {
-                email: email,
-                password: password,
-                remember: remember
-            };
-
             try {
-                const response = await fetch('/api/v1/auth/login', {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify({ email, password })
                 });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Store token and user data
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('refreshToken', data.refreshToken);
-                    localStorage.setItem('userRole', data.user.role);
-                    localStorage.setItem('userName', data.user.name);
-                    localStorage.setItem('userEmail', data.user.email);
-
-                    if (remember) {
-                        localStorage.setItem('rememberMe', 'true');
-                    }
-
-                    // Show success message
-                    showAlert('success', '¡Inicio de sesión exitoso! Redirigiendo...');
-
-                    // Redirect based on role
-                    setTimeout(() => {
-                        if (data.user.role === 'teacher') {
-                            window.location.href = '/dashboard/teacher';
-                        } else {
-                            window.location.href = '/dashboard/student';
-                        }
-                    }, 1500);
-                } else {
-                    throw new Error(data.message || 'Credenciales inválidas');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Error HTTP ${response.status}`);
                 }
+
+                const raw = await response.text();
+                if (!raw) {
+                    throw new Error('La respuesta del servidor está vacía o incompleta.');
+                }
+                const data = JSON.parse(raw);
+                if (!data.token || !data.user) {
+                    throw new Error('La respuesta del servidor no contiene los datos del usuario.');
+                }
+
+                // Store token and user data
+                localStorage.setItem('token', data.token);
+                if (data.refreshToken) {
+                    localStorage.setItem('refreshToken', data.refreshToken);
+                } else {
+                    localStorage.removeItem('refreshToken');
+                }
+                localStorage.setItem('userRole', data.user.role);
+                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userEmail', data.user.email);
+
+                if (remember) {
+                    localStorage.setItem('rememberMe', 'true');
+                } else {
+                    localStorage.removeItem('rememberMe');
+                }
+
+                // Show success message
+                showAlert('success', '¡Inicio de sesión exitoso! Redirigiendo...');
+
+                setTimeout(() => {
+                    redirectByRole(data.user.role);
+                }, 800);
             } catch (error) {
                 console.error('Error:', error);
                 showAlert('error', error.message);
@@ -823,17 +829,23 @@
         });
 
         // Check if user is already logged in
+        function redirectByRole(role) {
+            const normalized = (role || '').toUpperCase();
+            if (normalized === 'TEACHER' || normalized === 'PROFESOR') {
+                window.location.href = 'teacher/mis-clases.html';
+            } else if (normalized === 'STUDENT' || normalized === 'ESTUDIANTE') {
+                window.location.href = 'student/mis-clases.html';
+            } else {
+                showAlert('error', 'Rol no reconocido. Contacta al administrador.');
+            }
+        }
+
         window.addEventListener('load', () => {
             const token = localStorage.getItem('token');
             const userRole = localStorage.getItem('userRole');
-            
+
             if (token && userRole) {
-                // User is already logged in, redirect to dashboard
-                if (userRole === 'teacher') {
-                    window.location.href = '/dashboard/teacher';
-                } else {
-                    window.location.href = '/dashboard/student';
-                }
+                console.log('Sesión previa detectada. Permanece en la página de login hasta confirmar.');
             }
         });
 
