@@ -5,10 +5,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.Date;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +22,9 @@ public class JwtService {
 
     public JwtService(@Value("${jwt.secret}") String secret,
                       @Value("${jwt.expiration-minutes:240}") long expirationMinutes) {
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        // Decode the base64-encoded secret
+        byte[] decodedKey = Base64.getDecoder().decode(secret);
+        this.signingKey = Keys.hmacShaKeyFor(decodedKey);
         this.expirationMinutes = expirationMinutes;
     }
 

@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
         String[] origins = corsOrigins.split(",");
         
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")  // Allow all origins (more flexible)
+                .allowedOrigins(origins)  // Use actual origins from config
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
