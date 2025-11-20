@@ -20,15 +20,18 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Copy the built JAR from builder stage
 COPY --from=builder /app/target/*.jar app.jar
 
 # Expose the port (Railway will override this with PORT env variable)
 EXPOSE 8081
 
-# Health check
+# Health check - use curl instead of wget
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8081}/actuator/health || exit 1
+  CMD curl -f http://localhost:8081/actuator/health || exit 1
 
 # Run the application
 CMD ["java", "-jar", "app.jar"]
