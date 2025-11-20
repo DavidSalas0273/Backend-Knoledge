@@ -30,9 +30,16 @@ public class Clase {
     @Column(nullable = false)
     private Integer maxStudents = 30;
 
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean autoApprove = true;
+    
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean lateJoin = true;
+    
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean notifications = true;
+    
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean publicClass = false;
 
     @Column(nullable = false, unique = true, length = 10)
