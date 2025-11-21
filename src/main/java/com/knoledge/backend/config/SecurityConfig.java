@@ -109,17 +109,16 @@ public class SecurityConfig {
     private CorsConfiguration buildCorsConfiguration() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.setAllowCredentials(true);
-        List<String> dynamicOrigins = List.of(corsOriginsRaw.split(","));
-        corsConfig.setAllowedOrigins(dynamicOrigins);
+        List<String> dynamicPatterns = List.of(corsOriginsRaw.split(","));
         corsConfig.setAllowedOriginPatterns(List.of(
                 clientOrigin,
                 "https://backend-knoledge-production.up.railway.app",
                 "http://localhost:8081",
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
-                "null",
-                "*"
+                "null"
         ));
+        corsConfig.getAllowedOriginPatterns().addAll(dynamicPatterns);
         corsConfig.setAllowedHeaders(List.of("*"));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         return corsConfig;
