@@ -33,13 +33,16 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UsuarioRepository usuarioRepository;
     private final String clientOrigin;
+    private final String corsOriginsRaw;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           UsuarioRepository usuarioRepository,
-                          @Value("${client.origin:http://localhost:5173}") String clientOrigin) {
+                          @Value("${client.origin:http://localhost:5173}") String clientOrigin,
+                          @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000}") String corsOriginsRaw) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.usuarioRepository = usuarioRepository;
         this.clientOrigin = clientOrigin;
+        this.corsOriginsRaw = corsOriginsRaw;
     }
 
     @Bean
@@ -106,12 +109,16 @@ public class SecurityConfig {
     private CorsConfiguration buildCorsConfiguration() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.setAllowCredentials(true);
+        List<String> dynamicOrigins = List.of(corsOriginsRaw.split(","));
+        corsConfig.setAllowedOrigins(dynamicOrigins);
         corsConfig.setAllowedOriginPatterns(List.of(
                 clientOrigin,
+                "https://backend-knoledge-production.up.railway.app",
                 "http://localhost:8081",
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
-                "null"
+                "null",
+                "*"
         ));
         corsConfig.setAllowedHeaders(List.of("*"));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
