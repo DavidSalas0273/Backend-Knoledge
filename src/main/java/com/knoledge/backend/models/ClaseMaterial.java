@@ -30,7 +30,7 @@ public class ClaseMaterial {
     @Column(nullable = false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
+    @Column(name = "is_external", nullable = false, columnDefinition = "TINYINT(1)")
     private boolean external = false;
 
     public Long getId() {
