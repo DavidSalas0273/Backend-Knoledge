@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/health").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/", "/index.html", "/login.html", "/registro.html", "/student/**", "/teacher/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/classes/*/leave").hasAnyRole("STUDENT", "TEACHER")
