@@ -7,7 +7,6 @@ import com.knoledge.backend.models.Role;
 import com.knoledge.backend.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = {"${client.origin:http://localhost:5173}", "http://localhost:5173", "http://127.0.0.1:5173"})
 public class AuthController {
 
     private final AuthService authService;
