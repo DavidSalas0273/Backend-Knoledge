@@ -8,12 +8,32 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
 @Order(0)
 public class LocalCorsFilter implements Filter {
+
+    private final List<String> allowedOrigins;
+
+    public LocalCorsFilter(@Value("${cors.allowed-origins:http://localhost:5173,https://frontend-knoledge.vercel.app}") String origins) {
+        List<String> parsed = new ArrayList<>();
+        if (origins != null && !origins.isBlank()) {
+            Arrays.stream(origins.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(parsed::add);
+        }
+        if (!parsed.contains("http://localhost:5173")) {
+            parsed.add("http://localhost:5173");
+        }
+        this.allowedOrigins = parsed;
+    }
 
     @Override
     public void doFilter(
@@ -25,10 +45,13 @@ public class LocalCorsFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        // SOLO PARA LOCALHOST
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        response.setHeader("Vary", "Origin");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        String origin = request.getHeader("Origin");
+        boolean originAllowed = origin != null && allowedOrigins.contains(origin);
+        if (originAllowed) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Vary", "Origin");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+        }
 
         response.setHeader("Access-Control-Allow-Methods",
                 "GET, POST, PUT, DELETE, OPTIONS");
